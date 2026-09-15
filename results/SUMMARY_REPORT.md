@@ -1,0 +1,111 @@
+# Gfi1-Regulated Intercellular Signaling in AML
+## Computational Pipeline Summary Report
+
+**Generated:** 2026-09-15 19:43 UTC
+
+---
+
+### 1. Hypothesis
+
+Loss or down-regulation of the transcriptional repressor **Gfi1** in acute myeloid leukemia (AML) cells leads to de-repression of secreted ligands (cytokines, chemokines, extracellular-matrix factors). These ligands engage receptors on bone-marrow stromal and endothelial cells, remodeling the niche into a protective microenvironment.
+
+This report summarizes an end-to-end *in-silico* mapping of that axis.
+
+### 2. Differential Expression (GFI1-Low vs GFI1-High)
+
+- Total genes tested: **857**
+- Significantly up-regulated (padj < 0.05 & log2FC > 0.5): **12**
+- Of which annotated as secreted / extracellular: **12**
+
+**Top secreted candidates**
+
+| gene   |   log2FC |   padj |   mean_GFI1_low |   mean_GFI1_high |
+|--------|----------|--------|-----------------|------------------|
+| TGFB1  |    1.028 |  0.000 |           0.831 |            0.408 |
+| VEGFA  |    0.956 |  0.000 |           0.836 |            0.431 |
+| CCL2   |    0.946 |  0.000 |           0.817 |            0.424 |
+| MMP9   |    0.938 |  0.000 |           0.819 |            0.427 |
+| SPP1   |    0.937 |  0.000 |           0.789 |            0.412 |
+| CXCL8  |    0.936 |  0.000 |           0.845 |            0.441 |
+| S100A8 |    0.930 |  0.000 |           0.786 |            0.412 |
+| CSF1   |    0.924 |  0.000 |           0.787 |            0.415 |
+| CXCL12 |    0.917 |  0.000 |           0.814 |            0.431 |
+| ANGPT2 |    0.879 |  0.000 |           0.816 |            0.444 |
+
+![Top secreted](figures/top_secreted_candidates.png)
+
+### 3. Machine-Learning Prioritization
+
+An XGBoost classifier was trained to predict high-risk clinical status from the expression of candidate secreted genes.
+
+| Metric | Value |
+|--------|-------|
+| Test AUC | 0.890 |
+| Test Average Precision | 0.896 |
+| 5-fold CV AUC | 0.901 ± 0.015 |
+
+**Top genes by feature importance**
+
+| gene   |   importance |
+|--------|--------------|
+| MMP9   |       0.0564 |
+| TGFB1  |       0.0495 |
+| CCL2   |       0.0488 |
+| IL6    |       0.0426 |
+| PDGFA  |       0.0380 |
+| CSF1   |       0.0367 |
+| VEGFA  |       0.0337 |
+| BMP4   |       0.0305 |
+| SPP1   |       0.0302 |
+| CSF2   |       0.0299 |
+| ANGPT1 |       0.0272 |
+| LGALS3 |       0.0262 |
+
+![Feature importance](figures/ml_feature_importance.png)
+
+*Demo recovery check:* 6/7 planted drivers recovered in top-10 (CSF1, IL6, MMP9, SPP1, TGFB1, VEGFA).
+
+### 4. Intercellular Ligand–Receptor Map
+
+Ligand–receptor scores were computed between GFI1-Low leukemic/progenitor cells (senders) and niche populations (MSC, endothelial, monocyte/macrophage).
+
+- Scored interactions: **168**
+
+**Highest-scoring pairs**
+
+| ligand   | receptor   | sender         | receiver    |   interaction_score |
+|----------|------------|----------------|-------------|---------------------|
+| VEGFA    | KDR        | GMP            | Endothelial |               0.660 |
+| VEGFA    | KDR        | Leukemic_Blast | Endothelial |               0.650 |
+| CCL2     | CCR2       | HSC_MPP        | Monocyte    |               0.638 |
+| TGFB1    | TGFBR1     | GMP            | MSC         |               0.630 |
+| CXCL12   | CXCR4      | HSC_MPP        | MSC         |               0.616 |
+| VEGFA    | KDR        | HSC_MPP        | Endothelial |               0.610 |
+| CXCL12   | CXCR4      | Leukemic_Blast | MSC         |               0.609 |
+| CXCL12   | CXCR4      | GMP            | MSC         |               0.603 |
+| CCL2     | CCR2       | GMP            | Monocyte    |               0.598 |
+| TGFB1    | TGFBR1     | Leukemic_Blast | MSC         |               0.595 |
+| CCL2     | CCR2       | Leukemic_Blast | Monocyte    |               0.595 |
+| SPP1     | CD44       | HSC_MPP        | Macrophage  |               0.594 |
+
+![LR heatmap](figures/lr_interaction_heatmap.png)
+
+### 5. Structural Modeling & Virtual Screening (Next Step)
+
+The highest-priority ligand–receptor pairs identified above are candidates for AlphaFold3 / ColabFold complex prediction followed by AutoDock Vina virtual screening of FDA-approved compound libraries. See `docs/structural_followup.md` for a concrete protocol.
+
+### 6. Output Files
+
+| File | Description |
+|------|-------------|
+| `results/tables/deg_gfi1_low_vs_high.csv` | Full differential-expression table |
+| `results/tables/secreted_candidates.csv` | Prioritized secreted ligands |
+| `results/tables/ml_feature_importance.csv` | ML ranking of clinical drivers |
+| `results/tables/ml_performance.csv` | Model performance metrics |
+| `results/tables/lr_interaction_scores.csv` | Ligand–receptor interaction scores |
+| `results/figures/*.png` | All publication-ready figures |
+| `results/models/xgboost_risk_model.joblib` | Trained risk model |
+
+---
+
+*This report was auto-generated by the Gfi1-AML Signaling Mapping pipeline.*
